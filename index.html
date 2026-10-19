@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Genre Recipe Matcher Widget</title>
+    <style>
+        .widget-wrapper {
+            background-color: #22272e;
+            color: #ffffff;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            padding: 24px;
+            border-radius: 8px;
+            max-width: 900px;
+            margin: 0 auto;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        .widget-header {
+            background-color: #1c8a24;
+            color: #000000;
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-bottom: 3px solid #1c8a24;
+        }
+        .widget-header h2 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+        }
+        .widget-header p {
+            margin: 8px 0 0 0;
+            color: #111111;
+            font-size: 15px;
+            font-weight: 600;
+        }
+        .scoreboard {
+            display: flex;
+            justify-content: space-between;
+            background-color: #2d333b;
+            padding: 12px 20px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 16px;
+            font-weight: bold;
+            border-left: 5px solid #1c8a24;
+        }
+        .drop-zones-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .drop-zone {
+            background-color: #2d333b;
+            border: 2px dashed #444c56;
+            border-radius: 6px;
+            padding: 16px;
+            min-height: 160px;
+            transition: all 0.3s ease;
+        }
+        .drop-zone.drag-over {
+            border-color: #1c8a24;
+            background-color: #323b44;
+        }
+        .drop-zone h3 {
+            margin-top: 0;
+            color: #1c8a24;
+            font-size: 18px;
+            border-bottom: 1px solid #444c56;
+            padding-bottom: 8px;
+        }
+        .matched-items {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 10px;
+            min-height: 80px;
+        }
+        .recipe-bank-container {
+            background-color: #2d333b;
+            padding: 16px;
+            border-radius: 6px;
+            border-top: 3px solid #1c8a24;
+        }
+        .recipe-bank-container h3 {
+            margin-top: 0;
+            color: #1c8a24;
+            font-size: 18px;
+            margin-bottom: 12px;
+        }
+        .draggable-cards {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            min-height: 70px;
+        }
+        .recipe-card {
+            background-color: #373e47;
+            border: 1px solid #444c56;
+            border-radius: 6px;
+            padding: 10px 14px;
+            cursor: grab;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: transform 0.2s, background-color 0.2s;
+            user-select: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .recipe-card:active {
+            cursor: grabbing;
+        }
+        .recipe-card:hover {
+            background-color: #444c56;
+            transform: translateY(-2px);
+        }
+        .recipe-card img {
+            width: 36px;
+            height: 36px;
+            border-radius: 4px;
+            object-fit: cover;
+        }
+        .recipe-card span {
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .feedback-msg {
+            margin-top: 16px;
+            padding: 12px;
+            border-radius: 6px;
+            text-align: center;
+            font-weight: bold;
+            display: none;
+        }
+        .feedback-msg.success {
+            background-color: rgba(28, 138, 36, 0.2);
+            border: 1px solid #1c8a24;
+            color: #55ff66;
+            display: block;
+        }
+        .reset-btn {
+            background-color: #1c8a24;
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 16px;
+            transition: background-color 0.2s;
+        }
+        .reset-btn:hover {
+            background-color: #156d1d;
+        }
+    </style>
+</head>
+<body>
+
+<div class="widget-wrapper">
+    <div class="widget-header">
+        <h2>🎬 Genre Recipe Matcher</h2>
+        <p>Drag and drop the correct ingredients and tropes into their proper film genre recipes!</p>
+    </div>
+
+    <div class="scoreboard">
+        <div>Score: <span id="score">0</span> / 6</div>
+        <div>Streak: 🔥 <span id="streak">0</span></div>
+    </div>
+
+    <div class="drop-zones-container">
+        <div class="drop-zone" data-genre="horror">
+            <h3>Horror Genre</h3>
+            <div class="matched-items"></div>
+        </div>
+        <div class="drop-zone" data-genre="western">
+            <h3>Western Genre</h3>
+            <div class="matched-items"></div>
+        </div>
+        <div class="drop-zone" data-genre="scifi">
+            <h3>Sci-Fi Genre</h3>
+            <div class="matched-items"></div>
+        </div>
+    </div>
+
+    <div class="recipe-bank-container">
+        <h3>Ingredient &amp; Trope Bank</h3>
+        <div class="draggable-cards" id="card-bank">
+            <div class="recipe-card" draggable="true" id="card-1" data-genre="horror">
+                <img src="https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=100&q=80" alt="Shadowy hallway">
+                <span>Shadowy, echoing hallways</span>
+            </div>
+            <div class="recipe-card" draggable="true" id="card-2" data-genre="horror">
+                <img src="
